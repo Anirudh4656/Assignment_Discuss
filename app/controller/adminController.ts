@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import { User, UserRole } from "../schemas/User";
-import { Discuss } from "../schemas/User";
 import createHttpError from "http-errors";
 import { createResponse } from "../helper/response";
+import { Discuss } from "../schemas/Discussion";
 
 export const blockUser = async (req: Request, res: Response) => {
   const { id } = req.params;
@@ -21,7 +21,7 @@ export const blockUser = async (req: Request, res: Response) => {
   } else {
     user.isBlocked = true;
   }
-  user.role = UserRole.USER;
+  // user.role = UserRole.USER;
   await user.save();
   console.log(user);
   res.send(createResponse({ msg: "User blocked" }));
@@ -37,16 +37,17 @@ export const closeDiscussion = async (
   res: Response
 ): Promise<void> => {
   const { id } = req.params;
-  const discussion = await Discuss.findById(id);
+  const discussion = await Discuss.findByIdAndUpdate(
+    id,
+    { isClosed: true },
+    { new: true }
+  );
   if (!discussion) {
     throw createHttpError(404, {
       message: `Discussion not found`,
     });
   }
-  discussion.isClosed = true;
-  await discussion.save();
   res.send(createResponse({ msg: "Discussion closed" }));
-
 };
 export const deleteUser = async (
   req: Request,
