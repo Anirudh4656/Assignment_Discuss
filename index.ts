@@ -6,7 +6,6 @@ import bodyParser from "body-parser";
 import * as http from 'http';
 import { IUser, UserRole } from "./app/schemas/User";
 import userRoutes from "./app/routes/authRoutes";
-import discussionRoutes from "./app/routes/discussionRoutes"
 import adminRoutes from "./app/routes/adminRoutes";
 import { initPassport } from "./app/services/passport-jwt";
 import { roleAuth } from "./app/middlewares/roleAuth";
@@ -39,9 +38,10 @@ const initApp=async():Promise<void>=>{
         res.send({status:"ok"});
     });
     app.use('/api',userRoutes);
-   
-    app.use('/api',roleAuth(UserRole.USER,['/getDiscussion']), discussionRoutes);
-    app.use('/api/admin',roleAuth(UserRole.ADMIN),adminRoutes);
+    app.use('/api/admin',adminRoutes);
+    // app.use('/api/admin',roleAuth(UserRole.ADMIN),adminRoutes);
+    // app.use('/api',roleAuth(UserRole.USER,['/getDiscussion']), discussionRoutes);
+  
 
    
     http.createServer(app).listen(port,()=>{

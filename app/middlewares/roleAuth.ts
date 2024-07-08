@@ -3,24 +3,23 @@ import { type NextFunction, type Request, type Response } from "express";
 import expressAsyncHandler from "express-async-handler";
 import { type IUser, UserRole } from "../schemas/User";
 import createHttpError from "http-errors";
-import process from "process";
-
-//check code
+import {User} from "../schemas/User"
+interface AuthRequest extends Request {
+  user?: any;
+}
 export const roleAuth = (
   roles: UserRole | UserRole[],
   publicRoutes: string[] = []
 ): any =>
   expressAsyncHandler(
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: AuthRequest , res: Response, next: NextFunction) => {
       if (publicRoutes.includes(req.path)) {
         next();
-        // console.log("in public");
+     
         return;
       }
-      //?
-      console.log("why admin");
+
       let token = req.headers["authorization"]?.replace("Bearer ", "");
-      console.log("token",token)
       // console.log("authorization token",token1);
       //logic for handling admin portel
       //   // Handle the case where the authorization header might be an array
@@ -36,29 +35,27 @@ export const roleAuth = (
           message: `Invalid token`,
         });
       }
-      console.log("in verified", token);
+    
 
       const decodedUser = jwt.verify(token!, "dghfghghjghjghjghj"!) as IUser;
       //req.user?
-
-      req.user = decodedUser;
+//change any to type of user
+      req.user = await User.findById(decodedUser.id).select('-password');
 
       console.log("decode check middleware", req.user);
 
-      // req.userId=decodedUser._id as IUser;
 
-      //   const user = req.user as IUser;
-      //   if (user.role == null || !Object.values(UserRole).includes(user.role)) {
-      //     throw createHttpError(401, { message: "Invalid user role" });
-      //   }
-      //   if (!roles.includes(user.role)) {
-      //     const type =
-      //       user.role.slice(0, 1) + user.role.slice(1).toLocaleLowerCase();
+        if (decodedUser.role == null || !Object.values(UserRole).includes(decodedUser.role)) {
+          throw createHttpError(401, { message: "Invalid user role" });
+        }
+        // if (!roles.includes(user.role)) {
+        //   const type =
+        //     user.role.slice(0, 1) + user.role.slice(1).toLocaleLowerCase();
 
-      //     throw createHttpError(401, {
-      //       message: `${type} can not access this resource`,
-      //     });
-      //   }
+        //   throw createHttpError(401, {
+        //     message: `${type} can not access this resource`,
+        //   });
+        // }
       next();
     }
   );

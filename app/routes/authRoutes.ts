@@ -3,7 +3,7 @@ const router = express.Router();
 import { User, type IUser } from "../schemas/User";
 import passport from "passport";
 import { catchError, validate } from "../middlewares/validations";
-import { loginUser, registerUser, updateUser } from "../controller/user";
+import { loginUser, registerUser } from "../controller/auth";
 import expressAsyncHandler from "express-async-handler";
 router.post(
   "/signin",

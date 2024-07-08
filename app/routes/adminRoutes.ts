@@ -1,7 +1,7 @@
 import express from "express";
 import {
   blockUser,
-  closeDiscussion,
+  createPlan,
   deleteUser,
   Users,
 } from "../controller/adminController";
@@ -10,7 +10,7 @@ const router = express.Router();
 
 router.patch("/users/block/:id", expressAsyncHandler(blockUser));
 router.get("/users", expressAsyncHandler(Users));
-router.patch("/discussions/close/:id", expressAsyncHandler(closeDiscussion));
+router.post("/create", expressAsyncHandler(createPlan));
 router.delete("/users/delete/:id", expressAsyncHandler(deleteUser));
 
 export default router;

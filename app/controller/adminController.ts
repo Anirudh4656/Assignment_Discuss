@@ -2,8 +2,32 @@ import { Request, Response } from "express";
 import { User, UserRole } from "../schemas/User";
 import createHttpError from "http-errors";
 import { createResponse } from "../helper/response";
-import { Discuss } from "../schemas/Discussion";
 
+import {Plan} from "../schemas/PlanSchema";
+
+export const createPlan= async(req:Request,res:Response)=>{
+
+  const { name, price, apiLimit, storageLimit, domainLimit, apiLimitPerSecond } = req.body;
+  const plan = new Plan({
+    name,
+    price,
+    apiLimit,
+    storageLimit,
+    domainLimit,
+    apiLimitPerSecond
+  });
+
+  await plan.save();
+  res.send(createResponse({ msg: "Plans Created",plan }));
+}
+export const getPlans = async (req: Request, res: Response) => {
+  try {
+    const plans = await Plan.find();
+    res.send(createResponse({ msg: "Plans Created",plans }));
+  } catch (error) {
+    throw createHttpError(401, { message: "error getting Plan" });
+  }
+};
 export const blockUser = async (req: Request, res: Response) => {
   const { id } = req.params;
   console.log(id);
@@ -32,23 +56,7 @@ export const Users = async (req: Request, res: Response) => {
   res.send(createResponse(users));
 };
 
-export const closeDiscussion = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  const { id } = req.params;
-  const discussion = await Discuss.findByIdAndUpdate(
-    id,
-    { isClosed: true },
-    { new: true }
-  );
-  if (!discussion) {
-    throw createHttpError(404, {
-      message: `Discussion not found`,
-    });
-  }
-  res.send(createResponse({ msg: "Discussion closed" }));
-};
+
 export const deleteUser = async (
   req: Request,
   res: Response
