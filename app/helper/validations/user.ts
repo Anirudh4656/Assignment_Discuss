@@ -3,7 +3,7 @@ import  { User,UserRole } from "../../schemas/User";
 
 export const userLogin = [
   check("email")
-    .exists({ values: "falsy" })
+    .exists({ checkFalsy:true })
     .notEmpty()
     .bail()
     .withMessage("Email is required")
@@ -11,7 +11,7 @@ export const userLogin = [
     .bail()
     .withMessage("Enter valid email"),
   check("password")
-    .exists({ values: "falsy" })
+    .exists({  checkFalsy:true })
     .notEmpty()
     .bail()
     .withMessage("Password is required"),
@@ -53,14 +53,11 @@ export const create = [
       return true;
     }),
   password,
-  check("role")
-    .exists()
-    .bail()
-    .withMessage("Role is required")
+  check("username")
     .notEmpty()
     .bail()
-    .withMessage("Role is required")
-    .isIn(Object.values(UserRole)),
+    .withMessage("Please enter username")
+    
 ];
 
 export const createUserWithLink = [

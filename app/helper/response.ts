@@ -8,6 +8,8 @@ interface IResponse {
     error_code: number;
   };
   
+  //genrics
+  //revise
   export const createResponse = (
     data: IResponse["data"],
     message?: string

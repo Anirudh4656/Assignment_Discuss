@@ -1,14 +1,37 @@
-import { type IUser } from "../schemas/User";
+import { type IUser ,User} from "../schemas/User";
 import expressAsyncHandler from "express-async-handler";
 import { createResponse } from "../helper/response";
-//validate
-import * as userService from "../services/user";
-export const loginUser=expressAsyncHandler(async()=>{
-  
-});
+import { createUserTokens } from "../services/passport-jwt";
 
-export const registerUser=expressAsyncHandler(async(req,res)=>{
-  const {email,password,role} =req.body as IUser;  
-  const user= await userService.createUser({email,password ,role});
-  res.send(createResponse (user,"User created successfully"))
-  })
+//validate
+
+export const loginUser= (async (req:any, res:any) => {
+      
+        console.log("in user token",req.user._doc)
+
+        const createToken=createUserTokens(req.user._doc!)
+        console.log("in createToken",createToken);
+        res.send(
+          createResponse({ ...createToken, user: req.user._doc })
+        );
+});
+export const registerUser=(async(req:any, res:any) => {
+    const { username,email, password } = req.body as IUser;
+    const duplicateUser = await User.findOne({ email });
+
+    if (duplicateUser) {
+      return res.status(400).json({ msg: 'Invalid credentials or user blocked' });
+    }//will change to through http error
+    const user = new User({ email, password,username });
+    await user.save();
+    console.log("success")
+  res.send(createResponse( user));
+
+   
+  });
+  export const updateUser=expressAsyncHandler(async(req,res)=>{
+    const {id}=req.params;
+    const result= await User.findByIdAndUpdate(id,req.body);
+     res.send(createResponse(result,"User updated successfully"))
+  });
+

@@ -1,4 +1,4 @@
-import mongoose,{Types} from "mongoose";
+import mongoose,{Date, Types} from "mongoose";
 import { type BaseSchema } from "./index";
 import bcrypt from "bcrypt";
 
@@ -10,27 +10,42 @@ export enum UserRole {
 
   const Schema=mongoose.Schema;
   export interface IUser extends BaseSchema {
+    user:string;
+    id: string;
     save(): unknown;
     username:string,
     email:string;
     password:string;
-    role:'user'|'admin';
+    role:UserRole;
     isBlocked:boolean;
   }
+  export interface Reply{
+    id: any;
+    discussion:Types.ObjectId,
+    user:Types.ObjectId,
+    name:string,
+    content:string,
 
-  export interface IReply extends BaseSchema {
-    username:string,
-    email:string;
-    password:string;
-    role:'user'|'admin';
-    isBlocked:boolean;
   }
-  export interface ILike extends BaseSchema {
-    username:string,
-    email:string;
-    password:string;
-    role:'user'|'admin';
-    isBlocked:boolean;
+  export interface Like  {
+    equals: any;
+    user:Types.ObjectId,
+   
+  }
+  export interface IReply{
+    save(): unknown;
+    id: any;
+    discussion:Types.ObjectId,
+    user:Types.ObjectId,
+    name:string,
+    content:string,
+    replies:Reply[],
+    likes:Like[]
+  }
+  export interface ILike  {
+    user:Types.ObjectId,
+    discussion:Types.ObjectId,
+    reply:Types.ObjectId
   }
 //uppercase error 2)userrole passs  ?
   const UserSchema=new Schema<IUser>(
@@ -38,52 +53,53 @@ export enum UserRole {
        username:{type:String,required:true,unique:true},
        password:{type: String, required: true},
        email:{type:String,required:true,unique:true},
-       role:{type:String,enum:['user','admin'],default:'user'},
+       role:{type:String,enum:UserRole,default:UserRole.USER},
        isBlocked:{type:Boolean,default:false}
     }
   )
-//   UserSchema.pre("save",async function(next)){
 
-//   }
-
-//discussion schema 
 export interface IDiscuss extends BaseSchema{
   title:string,
  content:string,
  user:Types.ObjectId;
  isClosed:boolean,
- replies:IReply['_id'][],
- likes:ILike['_id'][],
- createdAt: Date,
-  updatedAt: Date
+ replies:IReply[],
+ likes:ILike[],
+ name:string
+
 }
+//will go for more optimal solution ,mp
 const DiscussionSchema=new Schema<IDiscuss>(
   {
     title:{type:String,required:true},
     content:{type:String,required:true},
     user:{type:Schema.Types.ObjectId, ref: 'User', required: true },
+    name:{type:String},
     createdAt:{type:Date,Default:Date.now},
     updatedAt:{type:Date,Default:Date.now},
     isClosed:{type:Boolean,default:false},
     replies:[{type:Schema.Types.ObjectId,ref:'Reply'}],
-    likes:[{type:Schema.Types.ObjectId,ref:'Likes'}],
+    likes:[{type:Schema.Types.ObjectId,ref:'Like'}],
 
     
   }
 )
 
-const ReplySchema= new Schema({
+const ReplySchema= new Schema<IReply>({
   content:{type:String,required:true},
+  replies: [{ type: Schema.Types.ObjectId, ref: 'Reply' }],
   user:{type:Schema.Types.ObjectId,ref:'User',required:true},
-  discussion:{type:Schema.Types.ObjectId,ref:'Disscus', required:true},
-  createdAt:{type:Date,default:Date.now}
+  discussion:{type:Schema.Types.ObjectId,ref:'Discuss', required:true},
+  name:{type:String},
+  likes:[{ type: Schema.Types.ObjectId, ref: 'Like' }]
 
 })
 //like Schema
 
-const LikeSchema=new Schema({
+const LikeSchema=new Schema<ILike >({
   user:{type:Schema.Types.ObjectId,ref:'User'},
-  discussion:{type:Schema.Types.ObjectId,ref:'Discuss'}
+  discussion:{type:Schema.Types.ObjectId,ref:'Discuss'},
+  reply:{type: Schema.Types.ObjectId, ref: 'Reply'}
 })
 //in Services folder
 UserSchema.pre("save", async function (next) {
